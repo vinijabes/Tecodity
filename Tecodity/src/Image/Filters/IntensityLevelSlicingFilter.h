@@ -6,7 +6,7 @@ namespace Tecodity {
 	class IntensityLevelSlicingFilter : public FilterInterface
 	{
 	public:
-		IntensityLevelSlicingFilter(int RangeA, int RangeB, int HighlightsIntensity, int ReduceOthersTo = 0);
+		IntensityLevelSlicingFilter(int RangeA, int RangeB, int HighlightsIntensity, int ReduceOthersTo = -1);
 		virtual void Apply(Image&) const override;
 
 	private:

@@ -20,7 +20,7 @@ namespace Tecodity {
 			{
 				image[i] = this->m_HighlightsIntensity;
 			}
-			else if (this->m_ReduceOthersTo > 0)
+			else if (this->m_ReduceOthersTo >= 0)
 			{
 				image[i] = this->m_ReduceOthersTo;
 			}

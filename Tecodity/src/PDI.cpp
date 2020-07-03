@@ -9,25 +9,26 @@
 #include "Image/Filters/NegativeFilter.h"
 #include "Image/Filters/HorizontalFlipFilter.h"
 #include "Image/Filters/GamaFilter.h"
+#include "Image/Filters/HistogramEqualizationFilter.h"
+#include "Image/Filters/IntensityLevelSlicingFilter.h"
 
 int main()
 {
 	std::cout << "INIT" << std::endl;
+
 	Tecodity::Image lena = Tecodity::PBMMatrix::Load("../lena640.pgm");
+	auto lenaequalized = std::move(Tecodity::Image::ApplyFilter(lena, Tecodity::HistogramEqualizationFilter(256)));
+	Tecodity::PBMMatrix::Save("lenaequalized640.pgm", lenaequalized);
+		
+	Tecodity::Image phist = Tecodity::PBMMatrix::Load("../phistf1.pgm");
+	auto phistequalized = std::move(Tecodity::Image::ApplyFilter(phist, Tecodity::HistogramEqualizationFilter(256)));
+	Tecodity::PBMMatrix::Save("phistequalized640.pgm", phistequalized);
 
-	auto negative = std::move(Tecodity::Image::ApplyFilter(lena, Tecodity::NegativeFilter()));
-	Tecodity::PBMMatrix::Save("lenanegative640.pgm", negative);
+	Tecodity::Image ctskull = Tecodity::PBMMatrix::Load("../ctskull-256.pgm");
+	auto levelSlice = std::move(Tecodity::Image::ApplyFilter(ctskull, Tecodity::IntensityLevelSlicingFilter(100, 150, 120, 0)));
+	Tecodity::PBMMatrix::Save("ctskullhighlighted-256.pgm", levelSlice);
 
-	auto horizontalFlipped = std::move(Tecodity::Image::ApplyFilter(lena, Tecodity::HorizontalFlipFilter()));
-	Tecodity::PBMMatrix::Save("lenaFlipped640.pgm", horizontalFlipped);
-
-	auto gamaFiltered = std::move(Tecodity::Image::ApplyFilter(lena, Tecodity::GamaFilter(2, 0.4)));
-	Tecodity::PBMMatrix::Save("lenaGama640.pgm", gamaFiltered);
-
-	/*Tecodity::PBMMatrix::Save("lenaminus640.pgm", lena - 100);
-	Tecodity::PBMMatrix::Save("lenaplus640.pgm", lena + 40);
-	*/
-
-	//auto rotated = Tecodity::PBMMatrix::Rotate90(lena);
-	//Tecodity::PBMMatrix::Save("lenarotate640.pgm", rotated);
+	Tecodity::Image spine = Tecodity::PBMMatrix::Load("../spine.pgm");
+	auto gamaCorrection = std::move(Tecodity::Image::ApplyFilter(spine, Tecodity::GamaFilter(1, 0.6)));
+	Tecodity::PBMMatrix::Save("ctskullgama-256.pgm", gamaCorrection);
 }

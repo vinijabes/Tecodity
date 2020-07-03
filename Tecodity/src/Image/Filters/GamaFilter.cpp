@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "GamaFilter.h"
 
+#include <cmath>
+
 namespace Tecodity {
 	GamaFilter::GamaFilter(double c, double gama)
 		: m_C(c), m_Gama(gama)

@@ -89,7 +89,7 @@ namespace Tecodity {
 
 		friend Matrix<T> operator-(const Matrix<T>& matrix, const Matrix<T>& other)
 		{
-			return Matrix<T>.Sub(matrix, other);
+			return Matrix<T>::Sub(matrix, other);
 		}
 
 		friend Matrix<T> operator-(const Matrix<T>& matrix, const T& other)
