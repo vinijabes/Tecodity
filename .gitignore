@@ -1,5 +1,6 @@
 *.exe
 *.pgm
+!vendor/
 .DS_Store
 _ReSharper*
 *.opensdf

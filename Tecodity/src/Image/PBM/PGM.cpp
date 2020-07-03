@@ -11,7 +11,6 @@ namespace Tecodity {
 			*data++ = input.Next();
 		}
 
-		std::cout << i << std::endl;
 		return matrix;
 	}
 

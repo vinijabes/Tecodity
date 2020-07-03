@@ -66,6 +66,11 @@ project "Tecodity"
         {
         }
 
+        postbuildcommands
+        {
+            ("{COPY} %{cfg.buildtarget.relpath} \"../data/\"")
+        }
+
     filter "configurations:Debug"
         defines "TECODITY_DEBUG"
         runtime "Debug"        

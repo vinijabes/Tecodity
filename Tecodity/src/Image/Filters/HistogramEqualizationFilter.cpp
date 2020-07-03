@@ -2,6 +2,7 @@
 #include "HistogramEqualizationFilter.h"
 
 #include <map>
+#include <cmath>
 
 namespace Tecodity {
 	HistogramEqualizationFilter::HistogramEqualizationFilter(int grayScale)
