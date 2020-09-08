@@ -1,4 +1,5 @@
 #include <memory>
+#include <algorithm>
 
 #ifdef _WIN32
 /* Windows x64/x86 */

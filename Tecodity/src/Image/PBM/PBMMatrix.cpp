@@ -2,6 +2,7 @@
 
 #include "PBMMatrix.h"
 #include "PGM.h"
+#include "PPM.h"
 
 namespace Tecodity {
 
@@ -46,7 +47,17 @@ namespace Tecodity {
 
 	void PBMMatrix::WriteHeader(std::ofstream& file, PBMFormat format, Matrix<int> matrix)
 	{
-		file << "P2\n";
+		switch (format)
+		{
+		case PBMFormat::P2:
+			file << "P2\n";
+			break;
+		case PBMFormat::P3:
+			file << "P3\n";
+			break;
+		default:
+			break;
+		}
 		file << matrix.GetWidth() << " " << matrix.GetHeight() << "\n";
 		file << 255 << "\n";
 	}
@@ -59,14 +70,18 @@ namespace Tecodity {
 		if (file.is_open())
 		{
 			header = ReadHeader(file);
-			Matrix<int> result = Matrix<int>((int)header.width, (int)header.height);
+			Matrix<int> result;
 
 			auto reader = PBMReader(file);
+			result = Matrix<int>((int)header.width, (int)header.height);
 			switch (header.format)
 			{
 			case PBMFormat::P2:
 				result = std::move(PGM::Load(result, reader));
 				return Image(std::move(result), ImageFormat::R);
+			case PBMFormat::P3:
+				result = std::move(PPM::Load(result, reader));
+				return Image(std::move(result), ImageFormat::RGB);
 			default:
 				break;
 			}
@@ -76,14 +91,23 @@ namespace Tecodity {
 		return Image(std::move(m), ImageFormat::R);
 	}
 	
-	void PBMMatrix::Save(const std::string& path, const Image& matrix)
+	void PBMMatrix::Save(const std::string& path, const Image& matrix, PBMFormat format)
 	{
 		std::ofstream file(path, std::ofstream::out);
 		std::string line;
 
-		WriteHeader(file, PBMFormat::P2, matrix.GetMatrix());
+		WriteHeader(file, format, matrix.GetMatrix());
 		auto writer = PBMWriter(file);
-		PGM::Save(matrix.GetMatrix(), writer);
+		switch (format)
+		{
+		case PBMFormat::P2:
+			PGM::Save(matrix.GetMatrix(), writer);
+			break;
+		case PBMFormat::P3:
+			PPM::Save(matrix.GetMatrix(), writer);
+		default:
+			break;
+		}
 	}
 
 	Matrix<int> PBMMatrix::Negative(const Matrix<int>& matrix)

@@ -72,7 +72,7 @@ namespace Tecodity {
 	{
 	public:
 		static Image Load(const std::string& path);
-		static void Save(const std::string& path, const Image& matrix);
+		static void Save(const std::string& path, const Image& matrix, PBMFormat format);
 
 		static Matrix<int> Negative(const Matrix<int>& matrix);
 		static Matrix<int> Rotate90(const Matrix<int>& matrix);

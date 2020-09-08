@@ -19,11 +19,11 @@ namespace Tecodity {
 	{
 	}
 	Image::Image(const Image& other)
-		: m_Data(other.m_Data), m_Format(other.m_Format)
+		: m_Data(other.m_Data), m_Format(other.m_Format), m_NegativeValues(other.m_NegativeValues)
 	{}
 
 	Image::Image(const Image && other) noexcept
-		: m_Data(std::move(other.m_Data)), m_Format(std::move(other.m_Format))
+		: m_Data(std::move(other.m_Data)), m_Format(std::move(other.m_Format)), m_NegativeValues(other.m_NegativeValues)
 	{}
 
 

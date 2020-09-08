@@ -1,5 +1,7 @@
 *.exe
 *.pgm
+*.ppm
+*.rar
 !vendor/
 .DS_Store
 _ReSharper*

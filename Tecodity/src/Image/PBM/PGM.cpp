@@ -20,7 +20,11 @@ namespace Tecodity {
 		auto data = matrix.GetData();
 		while (i--)
 		{
-			output.Write(*data++);
+			int value = *data++;
+
+			if (value < 0) value = 0;
+			else if (value > 255) value = 255;
+			output.Write(value);
 			if (i % matrix.GetWidth() == 0)output.NewLine();
 		}
 	}
