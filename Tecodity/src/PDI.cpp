@@ -9,6 +9,7 @@
 #include "Image/Filters/ConvertRGBToCMY.h"
 #include "Image/Filters/ConvertRGBToHSI.h"
 #include "Image/Filters/ConvertGrayToRGB.h"
+#include "Image/Filters/CustomFilter.h"
 
 #include "Core/Pipeline.h"
 
@@ -126,10 +127,114 @@ int main()
 	//Tecodity::PBMMatrix::Save("rgbpicker_phantom.ppm", pickerrgb, Tecodity::PBMFormat::P3);
 	//Tecodity::PBMMatrix::Save("rgbweld.ppm", weldrgb, Tecodity::PBMFormat::P3);
 
-	Tecodity::Image weld = Tecodity::PBMMatrix::Load("weld-original.pgm");
-
 	Tecodity::PipelineBuilder builder;
-	builder.RegisterFactory<Tecodity::ConvertGrayToRGB>("teste", [](const Tecodity::StepInput& input) {
+	builder.RegisterFactory<Tecodity::CustomFilter>("SumScalar", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			if (!input.Has(0))
+			{
+				throw "(SumScalar) missing parameters";
+			}
+
+			if (!input.IsNumber(0))
+			{
+				throw "(SumScalar) invalid input";
+			}
+
+			image.Add(input.GetNumber(0));
+
+			});
+		});
+
+	builder.RegisterFactory<Tecodity::CustomFilter>("MultiplyScalar", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			if (!input.Has(0))
+			{
+				throw "(MultiplyScalar) missing parameters";
+			}
+
+			if (!input.IsNumber(0))
+			{
+				throw "(MultiplyScalar) invalid input";
+			}
+
+			image.Multiply(input.GetNumber(0));
+
+			});
+		});
+
+	builder.RegisterFactory<Tecodity::CustomFilter>("SumImage", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			if (!input.Has(0))
+			{
+				throw "(MultiplyScalar) missing parameters";
+			}
+
+			auto imageInput = pipeline.GetInput(input.Get(0));
+
+			image.Add(*imageInput);
+
+			});
+		});
+
+	builder.RegisterFactory<Tecodity::CustomFilter>("MergeToRGB", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			if (!input.Has(2))
+			{
+				throw "(MergeToRGB) missing parameters";
+			}
+
+			auto image0 = pipeline.GetInput(input.Get(0));
+			auto image1 = pipeline.GetInput(input.Get(1));
+			auto image2 = pipeline.GetInput(input.Get(2));
+
+			if (!(image0->GetWidth() == image1->GetWidth() && image0->GetWidth() == image2->GetWidth()) ||
+				!(image0->GetHeight() == image1->GetHeight() && image0->GetHeight() == image2->GetHeight())) throw "(MergeToRGB) different image sizes";
+
+			image = *image0;
+			image.SetGChannelFromImage(*image1);
+			image.SetBChannelFromImage(*image2);
+		});
+	});
+
+	builder.RegisterFactory<Tecodity::CustomFilter>("SplitRGBChannels", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			if (!input.Has(2))
+			{
+				throw "(MergeToRGB) missing parameters";
+			}
+
+			auto image0 = pipeline.GetInput(input.Get(0));
+			auto image1 = pipeline.GetInput(input.Get(1));
+			auto image2 = pipeline.GetInput(input.Get(2));
+
+			if (!(image0->GetWidth() == image1->GetWidth() && image0->GetWidth() == image2->GetWidth()) ||
+				!(image0->GetHeight() == image1->GetHeight() && image0->GetHeight() == image2->GetHeight())) throw "(MergeToRGB) different image sizes";
+
+			image = *image0;
+			image.SetGChannelFromImage(*image1);
+			image.SetBChannelFromImage(*image2);
+			});
+		});
+
+	builder.RegisterFactory<Tecodity::CustomFilter>("GetRChannel", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			image = image.GetRChannelImage();
+			});
+		});
+
+	builder.RegisterFactory<Tecodity::CustomFilter>("GetGChannel", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			image = image.GetGChannelImage();
+			});
+		});
+
+	builder.RegisterFactory<Tecodity::CustomFilter>("GetBChannel", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			image = image.GetBChannelImage();
+			});
+		});
+
+	builder.RegisterFactory<Tecodity::ConvertGrayToRGB>("ConvertGrayToRGB", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
 		return new Tecodity::ConvertGrayToRGB([](int color) {
 			Tecodity::RGBColor result;
 
@@ -149,7 +254,5 @@ int main()
 		});
 
 	Tecodity::Pipeline p = builder.Build();
-	auto pipedWeld = p.Execute(weld);
-
-	Tecodity::PBMMatrix::Save("pipetest.ppm", pipedWeld, Tecodity::PBMFormat::P3);
+	p.Execute();
 }

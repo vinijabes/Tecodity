@@ -99,6 +99,16 @@ namespace Tecodity {
 			}
 		}
 
+		void Add(const int a)
+		{
+			int size = m_Data.GetWidth() * m_Data.GetHeight();
+
+			for (int i = 0; i < size; ++i)
+			{
+				this->operator[](i) = this->operator[](i).GetValue() + a;
+			}
+		}
+
 		void Multiply(const int a)
 		{
 			int size = m_Data.GetWidth() * m_Data.GetHeight();
