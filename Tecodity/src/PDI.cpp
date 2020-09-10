@@ -8,128 +8,63 @@
 
 #include "Image/Filters/ConvertRGBToCMY.h"
 #include "Image/Filters/ConvertRGBToHSI.h"
-#include "Image/Filters/ConvertGrayToRGB.h"
+#include "Image/Filters/LaplacianFilter.h"
 #include "Image/Filters/CustomFilter.h"
+#include "Image/Filters/RGBFilterWrapper.h"
+#include "Image/Filters/HistogramEqualizationFilter.h"
+#include "Image/Filters/IntensityLevelSlicingFilter.h"
+#include "Image/Filters/MedianFilter.h"
+#include "Image/Filters/SpatialFilter.h"
+#include "Image/Filters/BinaryFilter.h"
 
 #include "Core/Pipeline.h"
 
-int main()
+int main(int argc, char** argv)
 {
 	std::cout << "INIT" << std::endl;
 
-	//Tecodity::Image strawberries = Tecodity::PBMMatrix::Load("strawberries.ppm");
-
-	//auto rchannel = strawberries.GetRChannelImage();
-	//auto gchannel = strawberries.GetGChannelImage();
-	//auto bchannel = strawberries.GetBChannelImage();
-
-	//Tecodity::PBMMatrix::Save("rrgbstrawberries.pgm", rchannel, Tecodity::PBMFormat::P2);
-	//Tecodity::PBMMatrix::Save("grgbstrawberries.pgm", gchannel, Tecodity::PBMFormat::P2);
-	//Tecodity::PBMMatrix::Save("brgbstrawberries.pgm", bchannel, Tecodity::PBMFormat::P2);
-
-	//auto cmyimage = Tecodity::Image::ApplyFilter(strawberries, Tecodity::ConvertRGBToCMY());
-
-	//auto rcmychannel = cmyimage.GetRChannelImage();
-	//auto gcmychannel = cmyimage.GetGChannelImage();
-	//auto bcmychannel = cmyimage.GetBChannelImage();
-
-	//Tecodity::PBMMatrix::Save("ccmystrawberries.pgm", rcmychannel, Tecodity::PBMFormat::P2);
-	//Tecodity::PBMMatrix::Save("mcmystrawberries.pgm", gcmychannel, Tecodity::PBMFormat::P2);
-	//Tecodity::PBMMatrix::Save("ycmystrawberries.pgm", bcmychannel, Tecodity::PBMFormat::P2);
-
-	//auto hsiimage = Tecodity::Image::ApplyFilter(strawberries, Tecodity::ConvertRGBToHSI());
-
-	//auto rhsichannel = hsiimage.GetRChannelImage();
-	//auto ghsichannel = hsiimage.GetGChannelImage();
-	//auto bhsichannel = hsiimage.GetBChannelImage();
-
-	//Tecodity::PBMMatrix::Save("hhsistrawberries.pgm", rhsichannel, Tecodity::PBMFormat::P2);
-	//Tecodity::PBMMatrix::Save("shsistrawberries.pgm", ghsichannel, Tecodity::PBMFormat::P2);
-	//Tecodity::PBMMatrix::Save("ihsistrawberries.pgm", bhsichannel, Tecodity::PBMFormat::P2);
-
-	//Tecodity::Image WashingtonB = Tecodity::PBMMatrix::Load("WashingtonDCBand1-BLUE.pgm");
-	//Tecodity::Image WashingtonG = Tecodity::PBMMatrix::Load("WashingtonDCBand2-GREEN.pgm");
-	//Tecodity::Image WashingtonR = Tecodity::PBMMatrix::Load("WashingtonDCBand3-RED.pgm");
-	//Tecodity::Image Washington4 = Tecodity::PBMMatrix::Load("WashingtonDCBand4.pgm");
-
-	//Tecodity::Image image(WashingtonB.GetWidth(), WashingtonB.GetHeight(), Tecodity::ImageFormat::RGB);
-	//image.SetRChannelFromImage(WashingtonR);
-	//image.SetGChannelFromImage(WashingtonG);
-	//image.SetBChannelFromImage(WashingtonB);
-
-	//Tecodity::Image image2(WashingtonB.GetWidth(), WashingtonB.GetHeight(), Tecodity::ImageFormat::RGB);
-	//image2.SetRChannelFromImage(Washington4);
-	//image2.SetGChannelFromImage(WashingtonG);
-	//image2.SetBChannelFromImage(WashingtonB);
-
-	//Tecodity::PBMMatrix::Save("image1.ppm", image, Tecodity::PBMFormat::P3);
-	//Tecodity::PBMMatrix::Save("image2.ppm", image2, Tecodity::PBMFormat::P3);
-
-	//Tecodity::Image picker = Tecodity::PBMMatrix::Load("picker_phantom.pgm");
-	//Tecodity::Image weld = Tecodity::PBMMatrix::Load("weld-original.pgm");
-
-	//auto pickerrgb = Tecodity::Image::ApplyFilter(picker, Tecodity::ConvertGrayToRGB([](int color) {
-	//	Tecodity::RGBColor result;
-	//	result.c = 0;
-
-	//	if (color > 10 && color < 40)
-	//	{
-	//		result.rgb.r = 0;
-	//		result.rgb.g = 0;
-	//		result.rgb.b = 255;
-	//		return result;
-	//	}
-	//	else if (color > 40 && color < 90)
-	//	{
-	//		result.rgb.r = 255;
-	//		result.rgb.g = 255;
-	//		result.rgb.b = 0;
-	//	}
-	//	else if (color > 90 && color < 110)
-	//	{
-	//		result.rgb.r = 0;
-	//		result.rgb.g = 255;
-	//		result.rgb.b = 0;
-	//	}
-	//	else if (color > 110 && color < 125)
-	//	{
-	//		result.rgb.r = 255;
-	//		result.rgb.g = 0;
-	//		result.rgb.b = 0;
-	//	}
-	//	else if (color > 125)
-	//	{
-	//		result.rgb.r = 255;
-	//		result.rgb.g = 255;
-	//		result.rgb.b = 255;
-	//	}
-
-	//	return result;
-	//	}));
-
-	//auto weldrgb = Tecodity::Image::ApplyFilter(weld, Tecodity::ConvertGrayToRGB([](int color) {
-	//	Tecodity::RGBColor result;
-
-	//	result.c = 0;
-	//	result.rgb.b = 255;
-
-	//	if (color > 252)
-	//	{
-	//		result.rgb.r = 255;
-	//		result.rgb.g = 255;
-	//		result.rgb.b = 0;
-	//		return result;
-	//	}
-
-	//	return result;
-	//	}));
-
-	//Tecodity::PBMMatrix::Save("rgbpicker_phantom.ppm", pickerrgb, Tecodity::PBMFormat::P3);
-	//Tecodity::PBMMatrix::Save("rgbweld.ppm", weldrgb, Tecodity::PBMFormat::P3);
-
 	Tecodity::PipelineBuilder builder;
-	builder.RegisterFactory<Tecodity::CustomFilter>("SumScalar", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
-		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+	builder.RegisterFactory<Tecodity::RGBFilterWrapper>("EqualizeHistogram", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		int scale = 255;
+		if (input.Has(0) && input.IsNumber(0)) scale = input.GetNumber(0);
+		if (scale > 255 || scale < 0) throw "(EqualizeHistogram) invalid scale";
+
+		return new Tecodity::RGBFilterWrapper(std::make_shared<Tecodity::HistogramEqualizationFilter>(scale));
+		});
+
+	builder.RegisterFactory<Tecodity::RGBFilterWrapper>("IntensityLevelSlicing", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		if (!input.Has(2)) throw "(IntensityLevelSlicing) invalid argument count";
+		if (!input.IsNumber(0) || !input.IsNumber(1) || !input.IsNumber(2)) throw "(IntensityLevelSlicing) invalid argument count";
+		int rangeA = input.GetNumber(0);
+		int rangeB = input.GetNumber(1);
+		int newLevel = input.GetNumber(2);
+		int othersLevel = -1;
+
+		if (input.Has(3) && input.IsNumber(3)) othersLevel = input.GetNumber(3);
+
+		return new Tecodity::RGBFilterWrapper(std::make_shared<Tecodity::IntensityLevelSlicingFilter>(rangeA, rangeB, newLevel, othersLevel));
+		});
+
+	builder.RegisterFactory<Tecodity::RGBFilterWrapper>("MedianFilter", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		int filtersize = 3;
+		if (input.Has(0) && input.IsNumber(0)) filtersize = input.GetNumber(0);
+
+		return new Tecodity::RGBFilterWrapper(std::make_shared<Tecodity::MedianFilter>(Tecodity::Matrix<int>(filtersize,filtersize,1)));
+		});
+
+	builder.RegisterFactory<Tecodity::RGBFilterWrapper>("SpatialFilter", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		int filtersize = 3;
+		if (input.Has(0) && input.IsNumber(0)) filtersize = input.GetNumber(0);
+
+		return new Tecodity::RGBFilterWrapper(std::make_shared<Tecodity::SpatialFilter>(Tecodity::Matrix<int>(filtersize, filtersize, 1)));
+	});
+
+	builder.RegisterFactory<Tecodity::RGBFilterWrapper>("BinaryFilter", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		return new Tecodity::RGBFilterWrapper(std::make_shared<Tecodity::BinaryFilter>());
+		});
+
+	builder.RegisterFactory<Tecodity::RGBFilterWrapper>("SumScalar", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		return new Tecodity::RGBFilterWrapper(std::make_shared<Tecodity::CustomFilter>([&](Tecodity::Image& image) {
 			if (!input.Has(0))
 			{
 				throw "(SumScalar) missing parameters";
@@ -142,7 +77,7 @@ int main()
 
 			image.Add(input.GetNumber(0));
 
-			});
+			}));
 		});
 
 	builder.RegisterFactory<Tecodity::CustomFilter>("MultiplyScalar", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
@@ -176,6 +111,20 @@ int main()
 			});
 		});
 
+	builder.RegisterFactory<Tecodity::CustomFilter>("SubImage", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			if (!input.Has(0))
+			{
+				throw "(MultiplyScalar) missing parameters";
+			}
+
+			auto imageInput = pipeline.GetInput(input.Get(0));
+
+			image.Sub(*imageInput);
+
+			});
+		});
+
 	builder.RegisterFactory<Tecodity::CustomFilter>("MergeToRGB", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
 		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
 			if (!input.Has(2))
@@ -190,69 +139,71 @@ int main()
 			if (!(image0->GetWidth() == image1->GetWidth() && image0->GetWidth() == image2->GetWidth()) ||
 				!(image0->GetHeight() == image1->GetHeight() && image0->GetHeight() == image2->GetHeight())) throw "(MergeToRGB) different image sizes";
 
+			if (image0->GetFormat() != Tecodity::ImageFormat::R) throw "(MergeToRGB) Invalid R input channel";
+			if (image1->GetFormat() != Tecodity::ImageFormat::R) throw "(MergeToRGB) Invalid G input channel";
+			if (image2->GetFormat() != Tecodity::ImageFormat::R) throw "(MergeToRGB) Invalid B input channel";
+
+			image.SetFormat(Tecodity::ImageFormat::RGB);
 			image = *image0;
 			image.SetGChannelFromImage(*image1);
 			image.SetBChannelFromImage(*image2);
 		});
 	});
 
-	builder.RegisterFactory<Tecodity::CustomFilter>("SplitRGBChannels", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
-		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
-			if (!input.Has(2))
-			{
-				throw "(MergeToRGB) missing parameters";
-			}
-
-			auto image0 = pipeline.GetInput(input.Get(0));
-			auto image1 = pipeline.GetInput(input.Get(1));
-			auto image2 = pipeline.GetInput(input.Get(2));
-
-			if (!(image0->GetWidth() == image1->GetWidth() && image0->GetWidth() == image2->GetWidth()) ||
-				!(image0->GetHeight() == image1->GetHeight() && image0->GetHeight() == image2->GetHeight())) throw "(MergeToRGB) different image sizes";
-
-			image = *image0;
-			image.SetGChannelFromImage(*image1);
-			image.SetBChannelFromImage(*image2);
-			});
-		});
-
 	builder.RegisterFactory<Tecodity::CustomFilter>("GetRChannel", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
 		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			if (image.GetFormat() != Tecodity::ImageFormat::RGB) throw "(GetRChannel) Invalid input format";
+
 			image = image.GetRChannelImage();
+			image.SetFormat(Tecodity::ImageFormat::R);
 			});
 		});
 
 	builder.RegisterFactory<Tecodity::CustomFilter>("GetGChannel", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
 		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			if (image.GetFormat() != Tecodity::ImageFormat::RGB) throw "(GetGChannel) Invalid input format";
+
 			image = image.GetGChannelImage();
+			image.SetFormat(Tecodity::ImageFormat::R);
 			});
 		});
 
 	builder.RegisterFactory<Tecodity::CustomFilter>("GetBChannel", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
 		return new Tecodity::CustomFilter([&](Tecodity::Image& image) {
+			if (image.GetFormat() != Tecodity::ImageFormat::RGB) throw "(GetBChannel) Invalid input format";
+
 			image = image.GetBChannelImage();
+			image.SetFormat(Tecodity::ImageFormat::R);
 			});
 		});
 
-	builder.RegisterFactory<Tecodity::ConvertGrayToRGB>("ConvertGrayToRGB", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
-		return new Tecodity::ConvertGrayToRGB([](int color) {
-			Tecodity::RGBColor result;
+	builder.RegisterFactory<Tecodity::RGBFilterWrapper>("Laplacian", [](const Tecodity::StepInput& input, Tecodity::Pipeline& pipeline) {
+		Tecodity::Matrix<int> filter;
 
-			result.c = 0;
-			result.rgb.b = 255;
+		if (!input.Has(0))
+		{
+			filter = Tecodity::LaplacianFilter::Positive4();
+		}
+		else
+		{
+			std::string f = input.Get(0);
+			if (f == "+4") filter = Tecodity::LaplacianFilter::Positive4();
+			else if (f == "-4") filter = Tecodity::LaplacianFilter::Negative4();
+			else if (f == "+8") filter = Tecodity::LaplacianFilter::Positive8();
+			else if (f == "-8") filter = Tecodity::LaplacianFilter::Negative8();
+		}
 
-			if (color > 252)
-			{
-				result.rgb.r = 255;
-				result.rgb.g = 255;
-				result.rgb.b = 0;
-				return result;
-			}
-
-			return result;
-			});
+		return new Tecodity::RGBFilterWrapper(std::make_shared<Tecodity::LaplacianFilter>(filter));
 		});
 
-	Tecodity::Pipeline p = builder.Build();
+	Tecodity::Pipeline p;
+	if (argc >= 2)
+	{
+		p = builder.BuildFromFile(argv[1]);
+	}
+	else
+	{
+		p = builder.BuildFromFile("Teste123.pip");
+	}
 	p.Execute();
 }

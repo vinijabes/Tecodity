@@ -1,0 +1,7 @@
+load signal.ppm name=RGB
+GetRChannel
+Laplacian -4 name=laplace
+MultiplyScalar 1.6
+SpatialFilter 3
+BinaryFilter
+save testesLaplacian.pgm

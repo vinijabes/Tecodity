@@ -131,11 +131,24 @@ namespace Tecodity {
 			return *this;
 		}
 
-		void Print()
+		void Print() const
 		{
 			ForEach([this](T& elem, uint32_t i, uint32_t j) {
 				std::cout << "[" << i << "][" << j << "] = " << elem << std::endl;
-				});
+			});
+		}
+
+		void ForEach(std::function<void(T&, uint32_t, uint32_t)> cb) const
+		{
+			auto pointer = m_Elements.get();
+			for (int i = 0; i < m_SizeY; i++)
+			{
+				for (int j = 0; j < m_SizeX; j++)
+				{
+					cb(*pointer, i, j);
+					++pointer;
+				}
+			}
 		}
 
 		void ForEach(std::function<void(T&, uint32_t, uint32_t)> cb)

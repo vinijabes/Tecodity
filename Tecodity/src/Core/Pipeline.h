@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <map>
+#include <sstream>
 #include "Image/Image.h"
 
 namespace Tecodity {
@@ -28,11 +29,44 @@ namespace Tecodity {
 	{
 	protected:
 		std::vector<std::string> m_Params;
+		std::string m_Name;
+		std::string m_Input;
 	public:
 		void Add(std::string param)
 		{
 			m_Params.push_back(param);
 		}
+
+		void SetName(std::string name)
+		{
+			m_Name = name;
+		}
+
+		bool HasName()
+		{
+			return m_Name != "";
+		}
+
+		std::string GetName() const
+		{
+			return m_Name;
+		}
+
+		void SetInput(std::string input)
+		{
+			m_Input = input;
+		}
+
+		bool HasInput()
+		{
+			return m_Input != "";
+		}
+
+		std::string GetInput()
+		{
+			return m_Input;
+		}
+
 
 		bool Has(int pos) const
 		{
@@ -44,17 +78,17 @@ namespace Tecodity {
 			return m_Params[pos];
 		}
 
-		int GetNumber(int pos) const
+		double GetNumber(int pos) const
 		{
 			std::string s = m_Params[pos];
-			return std::stoi(s);
+			return std::stod(s);
 		}
 
 		bool IsNumber(int pos) const
 		{
 			std::string s = m_Params[pos];
 			return !s.empty() && std::find_if(s.begin(),
-				s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+				s.end(), [](unsigned char c) { return !(std::isdigit(c) || c == '.'); }) == s.end();
 		}
 	};
 
@@ -125,6 +159,20 @@ namespace Tecodity {
 		virtual void SetPipeline(Pipeline* pipeline) { SrcPipelineStep::SetPipeline(pipeline); }
 		virtual Pipeline* GetPipeline() { return SrcPipelineStep::GetPipeline(); }
 		virtual void Execute() = 0;
+	};
+
+	class InputImagePipelineStep : public SrcPipelineStep
+	{
+	protected:
+		std::shared_ptr<Image> m_Image;
+	public:
+		InputImagePipelineStep(std::shared_ptr<Image> image)
+			: m_Image(image) {}
+
+		virtual void Execute() override
+		{
+			m_Input = m_Image;
+		}
 	};
 
 	class LoadImagePipelineStep : public SrcPipelineStep
@@ -223,6 +271,11 @@ namespace Tecodity {
 			AddStep(random_string(16), std::static_pointer_cast<AbstractPipelineStep>(std::static_pointer_cast<SrcPipelineStep>(step)));
 		}
 
+		void AddStep(std::string name, std::shared_ptr<FilterPipelineStep> step)
+		{
+			AddStep(name, std::static_pointer_cast<AbstractPipelineStep>(std::static_pointer_cast<SrcPipelineStep>(step)));
+		}
+
 		void AddStep(std::shared_ptr<AbstractPipelineStep> step)
 		{
 			AddStep(random_string(16), step);
@@ -240,6 +293,54 @@ namespace Tecodity {
 				if (m_LastSrcStep != nullptr)
 				{
 					m_LastSrcStep->AddNextStep(sink);
+				}
+			}
+
+			if (std::dynamic_pointer_cast<SrcPipelineStep>(step) != nullptr)
+			{
+				auto src = std::static_pointer_cast<SrcPipelineStep>(step);
+				m_SrcSteps[name] = src;
+				if (std::dynamic_pointer_cast<SinkSrcPipelineStep>(src) == nullptr)
+				{
+					m_InitialSteps[name] = src;
+				}
+
+				m_LastSrcStep = src;
+			}
+		}
+
+		void AddStepWithInput(std::string input, std::shared_ptr<FilterPipelineStep> step)
+		{
+			AddStepWithInput(input, random_string(16), std::static_pointer_cast<AbstractPipelineStep>(std::static_pointer_cast<SrcPipelineStep>(step)));
+		}
+
+		void AddStepWithInput(std::string input, std::string name, std::shared_ptr<FilterPipelineStep> step)
+		{
+			AddStepWithInput(input, name, std::static_pointer_cast<AbstractPipelineStep>(std::static_pointer_cast<SrcPipelineStep>(step)));
+		}
+
+		void AddStepWithInput(std::string input, std::shared_ptr<AbstractPipelineStep> step)
+		{
+			AddStepWithInput(input, random_string(16), step);
+		}
+
+		void AddStepWithInput(std::string input, std::string name, std::shared_ptr<AbstractPipelineStep> step)
+		{
+			m_Steps[name] = step;
+			step->SetPipeline(this);
+
+			auto sink = std::dynamic_pointer_cast<SinkPipelineStep>(step);
+
+			if (sink != nullptr)
+			{
+				auto src = m_SrcSteps.find(input);
+				if (src != m_SrcSteps.end())
+				{
+					src->second->AddNextStep(sink);
+				}
+				else
+				{
+					throw "Unknown input " + input;
 				}
 			}
 
@@ -311,20 +412,119 @@ namespace Tecodity {
 			};
 		}
 
-		Pipeline Build()
+		Pipeline BuildFromFile(const std::string& path)
 		{
-			Pipeline x;
-			StepInput i;
-			i.Add("input");
-			i.Add("input2");
-			i.Add("input3");
-			x.AddStep("input", std::make_shared<LoadImagePipelineStep>("weld-original.pgm"));
-			x.AddStep("input2", std::make_shared<LoadImagePipelineStep>("weld-original.pgm"));
-			x.AddStep("input3", std::make_shared<LoadImagePipelineStep>("weld-original.pgm"));
-			x.AddStep(std::make_shared<FilterPipelineStep>(m_Factory["ConvertGrayToRGB"], i));
-			x.AddStep(std::make_shared<FilterPipelineStep>(m_Factory["MergeToRGB"], i));
-			x.AddStep(std::make_shared<SaveImagePipelineStep>("testepipeline.ppm"));
-			return x;
-		};
+			try
+			{
+				Pipeline p;
+
+				std::ifstream inputFile(path);
+				if (!inputFile.is_open())
+				{
+					throw "specified file not found";
+				}
+
+				std::string line;
+				int lineNumber = 0;
+				while (std::getline(inputFile, line))
+				{
+					std::istringstream iss(line);
+					std::string command;
+					StepInput input;
+
+					if (line.size() > 0 && line[0] == '#') continue;
+
+					if (!(iss >> command))
+					{
+						throw "Invalid input line " + lineNumber;
+					};
+
+					std::cout << "Command: " <<  command << std::endl;
+
+					std::string arg;
+
+					while (iss >> arg)
+					{
+						if (arg.find("name=") != std::string::npos)
+						{
+							std::string name = "";
+							name = arg.substr(arg.find("=") + 1);
+							std::cout << "Name: " << name << std::endl;
+							input.SetName(name);
+							continue;
+						}
+
+						if (arg.find("input=") != std::string::npos)
+						{
+							std::string src = "";
+							src = arg.substr(arg.find("=") + 1);
+							std::cout << "Input: " << src << std::endl;
+							input.SetInput(src);
+							continue;
+						}
+
+						input.Add(arg);
+						std::cout << "Argument: " << arg << std::endl;
+					}
+
+					if (command == "load")
+					{
+						if (input.HasName())
+						{
+							p.AddStep(input.GetName(), std::make_shared<LoadImagePipelineStep>(input.Get(0)));
+						}
+						else
+						{
+							p.AddStep(std::make_shared<LoadImagePipelineStep>(input.Get(0)));
+						}
+					}
+					else if (command == "save")
+					{
+						if (input.HasInput())
+						{
+							p.AddStepWithInput(input.GetInput(), std::make_shared<SaveImagePipelineStep>(input.Get(0)));
+						}
+						else
+						{
+							p.AddStep(std::make_shared<SaveImagePipelineStep>(input.Get(0)));
+						}
+					}
+					else
+					{
+						if (input.HasName())
+						{
+							if (input.HasInput())
+							{
+								p.AddStepWithInput(input.GetInput(), input.GetName(), std::make_shared<FilterPipelineStep>(m_Factory[command], input));
+							}
+							else
+							{
+								p.AddStep(input.GetName(), std::make_shared<FilterPipelineStep>(m_Factory[command], input));
+							}
+						}
+						else
+						{
+							if (input.HasInput())
+							{
+								p.AddStepWithInput(input.GetInput(), std::make_shared<FilterPipelineStep>(m_Factory[command], input));
+							}
+							else
+							{
+								p.AddStep(std::make_shared<FilterPipelineStep>(m_Factory[command], input));
+							}
+						}
+					}
+
+					++lineNumber;
+				}
+
+				return p;
+			}
+			catch (const char* err)
+			{
+				std::cerr << err << std::endl;
+				return Pipeline();
+			}
+		}
 	};
 }

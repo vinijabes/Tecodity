@@ -18,9 +18,9 @@ namespace Tecodity {
 		int c;
 		struct rgb
 		{
-			signed r : 9;
-			signed g : 9;
-			signed b : 9;
+			signed r : 10;
+			signed g : 10;
+			signed b : 10;
 		} rgb;
 	};
 
@@ -99,6 +99,19 @@ namespace Tecodity {
 			}
 		}
 
+		void Sub(const Image& other)
+		{
+			if (m_Data.GetWidth() == other.m_Data.GetWidth() && m_Data.GetHeight() == other.m_Data.GetHeight())
+			{
+				int size = m_Data.GetWidth() * m_Data.GetHeight();
+
+				for (int i = 0; i < size; ++i)
+				{
+					this->operator[](i) = this->operator[](i).GetValue() - other[i].GetValue();
+				}
+			}
+		}
+
 		void Add(const int a)
 		{
 			int size = m_Data.GetWidth() * m_Data.GetHeight();
@@ -109,7 +122,7 @@ namespace Tecodity {
 			}
 		}
 
-		void Multiply(const int a)
+		void Multiply(const double a)
 		{
 			int size = m_Data.GetWidth() * m_Data.GetHeight();
 
